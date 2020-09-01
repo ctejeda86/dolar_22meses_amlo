@@ -1,0 +1,124 @@
+setwd("C:\\Users\\HP\\Documents\\Termo\\Ago 2020\\dolar_sexenios")
+#leer el archivo txt, con el argumento "colclass" podemos 
+#especificar si es "Date", "numeric", "etc".
+datos<-read.table(file="dolar.txt",header=TRUE,sep="\t",
+                  dec=".",fill=TRUE, 
+                  colClasses = c("character","numeric"))
+datos<-as_tibble(datos)
+#cambiar "fecha" a class "Date" con el paquete Lubridate
+#y la función "dmy"
+library(dplyr)
+library(lubridate)
+datos$fecha<-dmy(datos$fecha)
+#ver head del dataframe
+head(datos)
+#ordenar el df por fecha de más antiguos a más recientes
+datos<-datos %>% arrange(datos$fecha)
+#graficar serie de tiempo
+library(ggplot2)
+library(directlabels)
+library(lattice)
+#x11()
+#qplot(data=datos, x=fecha, y=cierre)
+
+####### 
+#graficar 20 meses del sexenio de Felipe Calderón
+calderon<- as_tibble(datos %>%
+  filter(fecha >= ("2006-11-30") & fecha <= ("2008-08-29")))
+##crear un nuevo subset para poner los labels que quiero
+calderon$cierre2 <- ""
+# Let's just label these items.
+ix_label_calderon <- c(1,438)
+calderon$cierre2[ix_label_calderon] <- calderon$cierre[ix_label_calderon]
+
+
+#gráfica calderón
+gcalde<- ggplot(data=calderon, aes(x=fecha, y=cierre, label=cierre2))+
+  geom_line(color="darkblue")+
+  labs(x="Mes",y="Pesos por dólar")+
+  ggtitle("Tipo de cambio en 21m Calderón") +
+  theme(plot.title = element_text(hjust = 0.5))+
+  geom_point(color = ifelse(calderon$cierre2 == "", "darkblue", "red"))+
+  theme_minimal()+
+  #sirve para ajustar eje y que comience en 10 y hasta 25
+  coord_cartesian(ylim = c(10, 25))+
+  #agrega la etiqueta repel
+  geom_text_repel()
+
+
+
+#graficar por separado
+#x11()
+#plot(gcalde)
+#calcular depreciación calderón
+dep_calderon<-(calderon[438,2]/calderon[1,2]-1)*100
+
+#########
+#datos 20 meses del sexenio de Enrique Peña Nieto
+epn<- as_tibble(datos %>%
+  filter(fecha >= ("2012-11-30") & fecha <= ("2014-08-29")))
+
+##crear un nuevo subset para poner los labels que quiero
+epn$cierre2 <- ""
+# Let's just label these items.
+ix_label_epn <- c(1,438)
+epn$cierre2[ix_label_epn] <- epn$cierre[ix_label_epn]
+
+
+#gráfica 20 meses del sexenio de Enrique Peña Nieto
+gepn<-ggplot(data=epn, aes(x=fecha,y=cierre,label=cierre2))+
+  geom_line(color="red3")+
+  labs(x="Mes",y="Pesos por dólar")+
+  ggtitle("Tipo de cambio en 21m EPN") +
+  theme(plot.title = element_text(hjust = 0.5))+
+  geom_point(color = ifelse(epn$cierre2 == "", "red3", "black"))+
+  theme_minimal()+
+  #sirve para ajustar eje y que comience en 10 y hasta 25
+  coord_cartesian(ylim = c(10, 25))+
+  #agrega la etiqueta repel
+  geom_text_repel()
+
+
+
+#calcular depreciación epn
+dep_epn<-(epn[438,2]/epn[1,2]-1)*100
+##mostrar gráfica
+#x11()
+#plot(gepn)
+
+######
+#graficar 20 meses del sexenio de AMLO
+amlo<- as_tibble(datos %>%
+  filter(fecha >= ("2018-11-30") & fecha <= ("2020-08-31")))
+
+##crear un nuevo subset para poner los labels que quiero
+amlo$cierre2 <- ""
+# Let's just label these items.
+ix_label_amlo <- c(1,327,439)
+amlo$cierre2[ix_label_amlo] <- amlo$cierre[ix_label_amlo]
+
+#gráfica calderón ##MUY IMPORTANTE AGREGAR AQUÍ "LABEL" Y LA VARIABLE
+gamlo<- ggplot(data=amlo, aes(x=fecha, y=cierre,label=cierre2))+
+  geom_line(color="firebrick4")+
+  labs(x="Mes",y="Pesos por dólar")+
+  ggtitle("Tipo de cambio en 21m AMLO") +
+  theme(plot.title = element_text(hjust = 0.5))+
+  geom_point(color = ifelse(amlo$cierre2 == "", "firebrick4", "red"))+
+  theme_minimal()+
+  #sirve para ajustar eje y que comience en 10 y hasta 25
+  coord_cartesian(ylim = c(10, 25.5))+
+  #agrega la etiqueta repel
+  geom_text_repel()
+  
+
+#calcular depreciación calderón
+dep_AMLO<-(amlo[439,2]/amlo[1,2]-1)*100
+
+
+######
+#mostrar las tres gráficas juntas
+library(grid)
+library(gridExtra)
+x11()
+grid.arrange(gcalde, gepn,gamlo, ncol=3,
+             top = textGrob("USD-MXN en sexenios",gp=gpar(fontsize=15,font=2)))
