@@ -1,4 +1,3 @@
-setwd("C:\\Users\\HP\\Documents\\Termo\\Ago 2020\\dolar_sexenios")
 #leer el archivo txt, con el argumento "colclass" podemos 
 #especificar si es "Date", "numeric", "etc".
 datos<-read.table(file="dolar.txt",header=TRUE,sep="\t",
